@@ -6,7 +6,7 @@ const app = express();
 const pool = new Pool({
     user: 'local', // Substitua pelo seu usuário do PostgreSQL
     host: 'localhost',
-    database: 'biblioteca', // Nome da sua database
+    database: 'tarefasKanban', // Nome da sua database
     password: '12345', // Substitua pela sua senha
     port: 5432, // Porta padrão do PostgreSQL
 });
@@ -15,22 +15,22 @@ const pool = new Pool({
 app.use(cors());
 app.use(express.json());
 
-// Rota para buscar todos os livros
-app.get('/livros', async (req, res) => {
+// Rota para buscar todos os tarefas
+app.get('/tarefas', async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM livros');
+        const result = await pool.query('SELECT * FROM tarefas');
         res.json(result.rows);
     } catch (err) {
         console.error(err.message);
-        res.status(500).json({ error: 'Erro ao buscar livros' });
+        res.status(500).json({ error: 'Erro ao buscar tarefas' });
     }
 });
 
 // Rota para buscar um livro por ID
-app.get('/livros/:codigo', async (req, res) => {
+app.get('/tarefas/:codigo', async (req, res) => {
     const { codigo } = req.params;
     try {
-        const result = await pool.query('SELECT * FROM livros WHERE codigo = $1', [codigo]);
+        const result = await pool.query('SELECT * FROM tarefas WHERE codigo = $1', [codigo]);
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Carro não encontrado' });
         }
@@ -42,12 +42,12 @@ app.get('/livros/:codigo', async (req, res) => {
 });
 
 // Rota para adicionar um livro
-app.post('/livros', async (req, res) => {
-    const { titulo, autor, ano, editora, status } = req.body;
+app.post('/tarefas', async (req, res) => {
+    const { descricao, nome_setor, data_cadastro, prioridade, status } = req.body;
     try {
         const result = await pool.query(
-            'INSERT INTO livros (titulo, autor, ano, editora, status) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-            [titulo, autor, ano, editora, status]
+            'INSERT INTO tarefas (descricao, nome_setor, data_cadastro, prioridade, status) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+            [descricao, nome_setor, data_cadastro, prioridade, status]
         );
         res.status(201).json(result.rows[0]);
     } catch (err) {
@@ -56,14 +56,14 @@ app.post('/livros', async (req, res) => {
     }
 });
 
-app.put('/livros/:codigo', async (req, res) => {
+app.put('/tarefas/:codigo', async (req, res) => {
     const { codigo } = req.params;
-    const { titulo, autor, ano, editora, status, matricula, data_retirada, data_prevista_entrega } = req.body;
+    const { descricao, nome_setor, data_cadastro, prioridade, status, id_usuario, data_retirada, data_prevista_entrega } = req.body;
     try {
       // Atualizar o livro
       const updateResult = await pool.query(
-        'UPDATE livros SET titulo = $1, autor = $2, ano = $3, editora = $4, status = $5 WHERE codigo = $6 RETURNING *',
-        [titulo, autor, ano, editora, status, codigo]
+        'UPDATE tarefas SET descricao = $1, nome_setor = $2, data_cadastro = $3, prioridade = $4, status = $5 WHERE codigo = $6 RETURNING *',
+        [descricao, nome_setor, data_cadastro, prioridade, status, codigo]
       );
   
       if (updateResult.rows.length === 0) {
@@ -73,8 +73,8 @@ app.put('/livros/:codigo', async (req, res) => {
       // Criar aluguel se status for "alugado"
       if (status === 'emprestado') {
         await pool.query(
-            'INSERT INTO emprestimos (codigo_livro, matricula, data_retirada, data_prevista_entrega) VALUES ($1, $2, $3, $4)',
-            [codigo, matricula, data_retirada, data_prevista_entrega]
+            'INSERT INTO emprestimos (codigo_livro, id_usuario, data_retirada, data_prevista_entrega) VALUES ($1, $2, $3, $4)',
+            [codigo, id_usuario, data_retirada, data_prevista_entrega]
         );
       }
 
@@ -85,68 +85,11 @@ app.put('/livros/:codigo', async (req, res) => {
     }
   });
 
-
-// Atualizar um livro e registrar aluguel se status for "alugado"
-// app.put('/livros/:codigo', async (req, res) => {
-//     const { codigo } = req.params;
-//     const { titulo, autor, ano, editora, status, matricula_cliente, data_retirada, data_prevista_entrega } = req.body;
-
-//     try {
-//         // Atualizar o livro
-//         const updateResult = await pool.query(
-//             'UPDATE livros SET titulo = $1, autor = $2, ano = $3, editora = $4, status = $5 WHERE codigo = $6 RETURNING *',
-//             [titulo, autor, ano, editora, status, codigo]
-//         );
-
-//         if (updateResult.rows.length === 0) {
-//             return res.status(404).json({ error: 'Carro não encontrado' });
-//         }
-
-//         // Criar aluguel se status for "alugado"
-//         if (status === 'alugado') {
-//             if (!matricula_cliente || !data_retirada || !data_prevista_entrega) {
-//                 return res.status(400).json({ error: 'Informações do aluguel incompletas' });
-//             }
-
-//             await pool.query(
-//                 'INSERT INTO alugueis (codigo_livro, matricula_cliente, data_retirada, data_prevista_entrega) VALUES ($1, $2, $3, $4)',
-//                 [codigo, matricula_cliente, data_retirada, data_prevista_entrega]
-//             );
-//         }
-
-//         res.json(updateResult.rows[0]);
-//     } catch (err) {
-//         console.error(err.message);
-//         res.status(500).json({ error: 'Erro ao atualizar livro e registrar aluguel' });
-//     }
-// });
-
-
-
-// Rota para atualizar um livro
-// app.put('/livros/:codigo', async (req, res) => {
-//     const { codigo } = req.params;
-//     const { titulo, autor, ano, editora, status } = req.body;
-//     try {
-//         const result = await pool.query(
-//             'UPDATE livros SET titulo = $1, autor = $2, ano = $3, editora = $4, status = $5 WHERE codigo = $6 RETURNING *',
-//             [titulo, autor, ano, editora, status, codigo]
-//         );
-//         if (result.rows.length === 0) {
-//             return res.status(404).json({ error: 'Carro não encontrado' });
-//         }
-//         res.json(result.rows[0]);
-//     } catch (err) {
-//         console.error(err.message);
-//         res.status(500).json({ error: 'Erro ao atualizar livro' });
-//     }
-// });
-
 // Rota para deletar um livro
-app.delete('/livros/:codigo', async (req, res) => {
+app.delete('/tarefas/:codigo', async (req, res) => {
     const { codigo } = req.params;
     try {
-        const result = await pool.query('DELETE FROM livros WHERE codigo = $1 RETURNING *', [codigo]);
+        const result = await pool.query('DELETE FROM tarefas WHERE codigo = $1 RETURNING *', [codigo]);
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Carro não encontrado' });
         }
@@ -158,12 +101,12 @@ app.delete('/livros/:codigo', async (req, res) => {
 });
 
 // Rota para adicionar um cliente
-app.post('/estudantes', async (req, res) => {
-    const { matricula, nome_completo, data_nascimento, email, telefone } = req.body;
+app.post('/usuario', async (req, res) => {
+    const { id_usuario, nome, email, telefone } = req.body;
     try {
         const result = await pool.query(
-            'INSERT INTO estudantes (matricula, nome_completo, data_nascimento, email, telefone) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-            [matricula, nome_completo, data_nascimento, email, telefone]
+            'INSERT INTO usuario (id_usuario, nome, data_nascimento, email, telefone) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+            [id_usuario, nome, data_nascimento, email, telefone]
         );
         res.status(201).json(result.rows[0]);
     } catch (err) {
@@ -172,14 +115,14 @@ app.post('/estudantes', async (req, res) => {
     }
 });
 
-// Rota para buscar todos os estudantes
-app.get('/estudantes', async (req, res) => {
+// Rota para buscar todos os usuario
+app.get('/usuario', async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM estudantes');
+        const result = await pool.query('SELECT * FROM usuario');
         res.json(result.rows);
     } catch (err) {
         console.error(err.message);
-        res.status(500).json({ error: 'Erro ao buscar estudantes' });
+        res.status(500).json({ error: 'Erro ao buscar usuario' });
     }
 });
 
