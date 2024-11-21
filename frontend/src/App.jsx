@@ -2,178 +2,177 @@ import React, { useEffect, useState } from 'react';
 import Card from './components/Card';
 
 function App() {
-  const [carros, setCarros] = useState([]);
-  const [clientes, setClientes] = useState([]);
-  const [isAddingCarro, setIsAddingCarro] = useState(false);
-  const [isAddingCliente, setIsAddingCliente] = useState(false);
-  const [novoCarro, setNovoCarro] = useState({
-    modelo: '',
-    cor: '',
-    km: 0,
-    placa: '',
+  const [livros, setLivros] = useState([]);
+  const [estudantes, setEstudantes] = useState([]);
+  const [isAddingLivro, setIsAddingLivro] = useState(false);
+  const [isAddingEstudante, setIsAddingEstudante] = useState(false);
+  const [novoLivro, setNovoLivro] = useState({
+    titulo: '',
+    autor: '',
+    ano: 0,
+    editora: '',
   });
-  const [novoCliente, setNovoCliente] = useState({
-    cpf: '',
+  const [novoEstudante, setNovoEstudante] = useState({
+    matricula: '',
     nome_completo: '',
     data_nascimento: '',
     email: '',
     telefone: '',
   });
 
-  const filtroCarrosPorSituacao = (situacao) => carros.filter(carro => carro.situacao === situacao);
+  const filtroLivrosPorStatus = (status) => livros.filter(livro => livro.status === status);
 
-  function adicionarCarro() {
-    setIsAddingCarro(true);
+  function adicionarLivro() {
+    setIsAddingLivro(true);
+  }
+  function adicionarEstudante() {
+    setIsAddingEstudante(true);
   }
 
-  function adicionarCliente() {
-    setIsAddingCliente(true);
-  }
-
-  const salvarCarro = async () => {
+  const salvarLivro = async () => {
     try {
-      await fetch('http://localhost:3000/carros', {
+      await fetch('http://localhost:3000/livros', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...novoCarro, situacao: 'uso' }),
+        body: JSON.stringify({ ...novoLivro, status: 'a_fazer' }),
       });
-      setIsAddingCarro(false);
-      setNovoCarro({ modelo: '', cor: '', km: 0, placa: '' });
-      buscarCarros();
+      setIsAddingLivro(false);
+      setNovoLivro({ titulo: '', autor: '', ano: 0, editora: '' });
+      buscarLivros();
     } catch (error) {
-      console.error('Erro ao salvar carro:', error);
+      console.error('Erro ao salvar livro:', error);
     }
   };
 
-  const salvarCliente = async () => {
+  const salvarEstudante = async () => {
     try {
-      await fetch('http://localhost:3000/clientes', {
+      await fetch('http://localhost:3000/estudantes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(novoCliente),
+        body: JSON.stringify(novoEstudante),
       });
-      setIsAddingCliente(false);
-      setNovoCliente({ cpf: '', nome_completo: '', data_nascimento: '', email: '', telefone: '' });
-      buscarClientes();
+      setIsAddingEstudante(false);
+      setNovoEstudante({ cpf: '', nome_completo: '', data_nascimento: '', email: '', telefone: '' });
+      buscarEstudantes();
     } catch (error) {
       console.error('Erro ao salvar cliente:', error);
     }
   };
 
-  const buscarCarros = async () => {
+  const buscarLivros = async () => {
     try {
-      const response = await fetch('http://localhost:3000/carros');
+      const response = await fetch('http://localhost:3000/livros');
       const data = await response.json();
-      setCarros(data);
+      setLivros(data);
     } catch (error) {
-      console.error('Erro ao buscar carros:', error);
+      console.error('Erro ao buscar livros:', error);
     }
   };
 
-  const buscarClientes = async () => {
+  const buscarEstudantes = async () => {
     try {
-      const response = await fetch('http://localhost:3000/clientes');
+      const response = await fetch('http://localhost:3000/estudantes');
       const data = await response.json();
-      setClientes(data);
+      setEstudantes(data);
     } catch (error) {
-      console.error('Erro ao buscar clientes:', error);
+      console.error('Erro ao buscar estudantes:', error);
     }
   };
 
   useEffect(() => {
-    buscarCarros();
-    buscarClientes();
+    buscarLivros();
+    buscarEstudantes();
   }, []);
 
   return (
     <div>
       <header>
-        <h1>Aluga Carros</h1>
-        <button onClick={adicionarCarro}>Adicionar Carro</button>
-        <button onClick={adicionarCliente}>Adicionar Cliente</button>
+        <h1>Aluga Livros</h1>
+        <button onClick={adicionarLivro}>Adicionar Livro</button>
+        <button onClick={adicionarEstudante}>Adicionar Estudante</button>
       </header>
       <div className="dashboard">
         <div className="coluna-dashboard">
-          <h2>Em Uso</h2>
-          {filtroCarrosPorSituacao('uso').map(carro => (
-            <Card key={carro.id} carro={carro} buscarCarros={buscarCarros} clientes={clientes} />
+          <h2>A fazer</h2>
+          {filtroLivrosPorStatus('a_fazer').map(livro => (
+            <Card key={livro.codigo} livro={livro} buscarLivros={buscarLivros} estudantes={estudantes} />
           ))}
         </div>
         <div className="coluna-dashboard">
-          <h2>Alugados</h2>
-          {filtroCarrosPorSituacao('alugado').map(carro => (
-            <Card key={carro.id} carro={carro} buscarCarros={buscarCarros} clientes={clientes} />
+          <h2>Em andamento</h2>
+          {filtroLivrosPorStatus('em_andamento').map(livro => (
+            <Card key={livro.codigo} livro={livro} buscarLivros={buscarLivros} estudantes={estudantes} />
           ))}
         </div>
         <div className="coluna-dashboard">
-          <h2>Em Manutenção</h2>
-          {filtroCarrosPorSituacao('manutencao').map(carro => (
-            <Card key={carro.id} carro={carro} buscarCarros={buscarCarros} clientes={clientes} />
+          <h2>Concluído</h2>
+          {filtroLivrosPorStatus('concluido').map(livro => (
+            <Card key={livro.codigo} livro={livro} buscarLivros={buscarLivros} estudantes={estudantes} />
           ))}
         </div>
       </div>
-      {isAddingCarro && (
+      {isAddingLivro && (
         <div className="modal">
           <div className="modal-content">
-            <h2>Adicionar Carro</h2>
+            <h2>Adicionar Livro</h2>
             <input
-              placeholder="Modelo"
-              value={novoCarro.modelo}
-              onChange={(e) => setNovoCarro({ ...novoCarro, modelo: e.target.value })}
+              placeholder="Titulo"
+              value={novoLivro.titulo}
+              onChange={(e) => setNovoLivro({ ...novoLivro, titulo: e.target.value })}
             />
             <input
-              placeholder="Cor"
-              value={novoCarro.cor}
-              onChange={(e) => setNovoCarro({ ...novoCarro, cor: e.target.value })}
+              placeholder="Autor"
+              value={novoLivro.autor}
+              onChange={(e) => setNovoLivro({ ...novoLivro, autor: e.target.value })}
             />
             <input
               type="number"
               placeholder="KM"
-              value={novoCarro.km}
-              onChange={(e) => setNovoCarro({ ...novoCarro, km: parseInt(e.target.value) })}
+              value={novoLivro.ano}
+              onChange={(e) => setNovoLivro({ ...novoLivro, ano: parseInt(e.target.value) })}
             />
             <input
-              placeholder="Placa"
-              value={novoCarro.placa}
-              onChange={(e) => setNovoCarro({ ...novoCarro, placa: e.target.value })}
+              placeholder="Editora"
+              value={novoLivro.editora}
+              onChange={(e) => setNovoLivro({ ...novoLivro, editora: e.target.value })}
             />
-            <button onClick={salvarCarro}>Salvar</button>
-            <button onClick={() => setIsAddingCarro(false)}>Cancelar</button>
+            <button onClick={salvarLivro}>Salvar</button>
+            <button onClick={() => setIsAddingLivro(false)}>Cancelar</button>
           </div>
         </div>
       )}
-      {isAddingCliente && (
+      {isAddingEstudante && (
         <div className="modal">
           <div className="modal-content">
-            <h2>Adicionar Cliente</h2>
+            <h2>Adicionar Estudante</h2>
             <input
               placeholder="CPF"
-              value={novoCliente.cpf}
-              onChange={(e) => setNovoCliente({ ...novoCliente, cpf: e.target.value })}
+              value={novoEstudante.cpf}
+              onChange={(e) => setNovoEstudante({ ...novoEstudante, cpf: e.target.value })}
             />
             <input
               placeholder="Nome Completo"
-              value={novoCliente.nome_completo}
-              onChange={(e) => setNovoCliente({ ...novoCliente, nome_completo: e.target.value })}
+              value={novoEstudante.nome_completo}
+              onChange={(e) => setNovoEstudante({ ...novoEstudante, nome_completo: e.target.value })}
             />
             <input
               type="date"
               placeholder="Data de Nascimento"
-              value={novoCliente.data_nascimento}
-              onChange={(e) => setNovoCliente({ ...novoCliente, data_nascimento: e.target.value })}
+              value={novoEstudante.data_nascimento}
+              onChange={(e) => setNovoEstudante({ ...novoEstudante, data_nascimento: e.target.value })}
             />
             <input
               placeholder="Email"
-              value={novoCliente.email}
-              onChange={(e) => setNovoCliente({ ...novoCliente, email: e.target.value })}
+              value={novoEstudante.email}
+              onChange={(e) => setNovoEstudante({ ...novoEstudante, email: e.target.value })}
             />
             <input
               placeholder="Telefone"
-              value={novoCliente.telefone}
-              onChange={(e) => setNovoCliente({ ...novoCliente, telefone: e.target.value })}
+              value={novoEstudante.telefone}
+              onChange={(e) => setNovoEstudante({ ...novoEstudante, telefone: e.target.value })}
             />
-            <button onClick={salvarCliente}>Salvar</button>
-            <button onClick={() => setIsAddingCliente(false)}>Cancelar</button>
+            <button onClick={salvarEstudante}>Salvar</button>
+            <button onClick={() => setIsAddingEstudante(false)}>Cancelar</button>
           </div>
         </div>
       )}
@@ -185,22 +184,22 @@ export default App;
 
 
 // import React, { useEffect, useState } from 'react';
-// import CarroCard from './components/CarroCard';
+// import LivroCard from './components/LivroCard';
 
 // function App() {
-//     const [carros, setCarros] = useState([]);
-//     const [clientes, setClientes] = useState([]);
-//     const [isAddingCarro, setIsAddingCarro] = useState(false);
-//     const [isAddingCliente, setIsAddingCliente] = useState(false);
+//     const [livros, setLivros] = useState([]);
+//     const [estudantes, setEstudantes] = useState([]);
+//     const [isAddingLivro, setIsAddingLivro] = useState(false);
+//     const [isAddingEstudante, setIsAddingEstudante] = useState(false);
 
-//     const [novoCarro, setNovoCarro] = useState({
-//         modelo: '',
-//         cor: '',
-//         km: 0,
-//         placa: '',
+//     const [novoLivro, setNovoLivro] = useState({
+//         titulo: '',
+//         autor: '',
+//         ano: 0,
+//         editora: '',
 //     });
 
-//     const [novoCliente, setNovoCliente] = useState({
+//     const [novoEstudante, setNovoEstudante] = useState({
 //         cpf: '',
 //         nome_completo: '',
 //         data_nascimento: '',
@@ -208,69 +207,69 @@ export default App;
 //         telefone: '',
 //     });
 
-//     const filtroCarrosPorSituacao = (situacao) => carros.filter(carro => carro.situacao === situacao);
+//     const filtroLivrosPorStatus = (status) => livros.filter(livro => livro.status === status);
 
-//     function adicionarCarro() {
-//         setIsAddingCarro(true);
+//     function adicionarLivro() {
+//         setIsAddingLivro(true);
 //     }
 
-//     function adicionarCliente() {
-//         setIsAddingCliente(true);
+//     function adicionarEstudante() {
+//         setIsAddingEstudante(true);
 //     }
 
-//     const salvarCarro = async () => {
+//     const salvarLivro = async () => {
 //         try {
-//             await fetch('http://localhost:3000/carros', {
+//             await fetch('http://localhost:3000/livros', {
 //                 method: 'POST',
 //                 headers: { 'Content-Type': 'application/json' },
-//                 body: JSON.stringify({ ...novoCarro, situacao: 'uso' }),
+//                 body: JSON.stringify({ ...novoLivro, status: 'a_fazer' }),
 //             });
-//             setIsAddingCarro(false);
-//             setNovoCarro({ modelo: '', cor: '', km: 0, placa: '' });
-//             buscarCarros();
+//             setIsAddingLivro(false);
+//             setNovoLivro({ titulo: '', autor: '', ano: 0, editora: '' });
+//             buscarLivros();
 //         } catch (error) {
-//             console.error('Erro ao salvar carro:', error);
+//             console.error('Erro ao salvar livro:', error);
 //         }
 //     };
 
-//     const salvarCliente = async () => {
+//     const salvarEstudante = async () => {
 //         try {
-//             await fetch('http://localhost:3000/clientes', {
+//             await fetch('http://localhost:3000/estudantes', {
 //                 method: 'POST',
 //                 headers: { 'Content-Type': 'application/json' },
-//                 body: JSON.stringify(novoCliente),
+//                 body: JSON.stringify(novoEstudante),
 //             });
-//             setIsAddingCliente(false);
-//             setNovoCliente({ cpf: '', nome_completo: '', data_nascimento: '', email: '', telefone: '' });
-//             buscarClientes();
+//             setIsAddingEstudante(false);
+//             setNovoEstudante({ cpf: '', nome_completo: '', data_nascimento: '', email: '', telefone: '' });
+//             buscarEstudantes();
 //         } catch (error) {
 //             console.error('Erro ao salvar cliente:', error);
 //         }
 //     };
 
-//     const buscarCarros = async () => {
+//     const buscarLivros = async () => {
 //         try {
-//             const response = await fetch('http://localhost:3000/carros');
+//             const response = await fetch('http://localhost:3000/livros');
 //             const data = await response.json();
-//             setCarros(data);
+//             setLivros(data);
 //         } catch (error) {
-//             console.error('Erro ao buscar carros:', error);
+//             console.error('Erro ao buscar livros:', error);
 //         }
 //     };
 
-//     const buscarClientes = async () => {
+//     const buscarEstudantes = async () => {
 //         try {
-//             const response = await fetch('http://localhost:3000/clientes');
+//             const response = await fetch('http://localhost:3000/estudantes');
 //             const data = await response.json();
-//             setClientes(data);
+//             setEstudantes(data);
 //         } catch (error) {
-//             console.error('Erro ao buscar clientes:', error);
+//             console.error('Erro ao buscar estudantes:', error);
 //         }
 //     };
 
 //     useEffect(() => {
-//         buscarCarros();
-//         buscarClientes();
+//         buscarLivros();
+//         buscarEstudantes();
 //     }, []);
 
 //     return (
@@ -278,123 +277,123 @@ export default App;
 //             <header>
 //                 <h1>Controle de Frota</h1>
 //                 <div>
-//                     <button onClick={adicionarCarro}>Novo Carro</button>
-//                     <button onClick={adicionarCliente}>Novo Cliente</button>
+//                     <button onClick={adicionarLivro}>Novo Livro</button>
+//                     <button onClick={adicionarEstudante}>Novo Estudante</button>
 //                 </div>
 //             </header>
 
 //             <div className="dashboard">
 //                 <div className="coluna-dashboard">
 //                     <h2>Uso</h2>
-//                     {filtroCarrosPorSituacao('uso').map(carro => (
-//                         <CarroCard key={carro.id} carro={carro} buscarCarros={buscarCarros} />
+//                     {filtroLivrosPorStatus('a_fazer').map(livro => (
+//                         <LivroCard key={livro.codigo} livro={livro} buscarLivros={buscarLivros} />
 //                     ))}
 //                 </div>
 //                 <div className="coluna-dashboard">
 //                     <h2>Alugados</h2>
-//                     {filtroCarrosPorSituacao('alugado').map(carro => (
-//                         <CarroCard key={carro.id} carro={carro} buscarCarros={buscarCarros} />
+//                     {filtroLivrosPorStatus('em_andamento').map(livro => (
+//                         <LivroCard key={livro.codigo} livro={livro} buscarLivros={buscarLivros} />
 //                     ))}
 //                 </div>
 //                 <div className="coluna-dashboard">
 //                     <h2>Manutenção</h2>
-//                     {filtroCarrosPorSituacao('manutencao').map(carro => (
-//                         <CarroCard key={carro.id} carro={carro} buscarCarros={buscarCarros} />
+//                     {filtroLivrosPorStatus(' conclucodigoo').map(livro => (
+//                         <LivroCard key={livro.codigo} livro={livro} buscarLivros={buscarLivros} />
 //                     ))}
 //                 </div>
 //             </div>
 
-//             {isAddingCarro && (
+//             {isAddingLivro && (
 //                 <div className="modal">
 //                     <div className="modal-content">
-//                         <h3>Cadastrar Novo Carro</h3>
+//                         <h3>Cadastrar Novo Livro</h3>
 //                         <label>
-//                             Modelo:
+//                             Titulo:
 //                             <input
 //                                 type="text"
-//                                 value={novoCarro.modelo}
-//                                 onChange={(e) => setNovoCarro({ ...novoCarro, modelo: e.target.value })}
+//                                 value={novoLivro.titulo}
+//                                 onChange={(e) => setNovoLivro({ ...novoLivro, titulo: e.target.value })}
 //                             />
 //                         </label>
 //                         <label>
-//                             Cor:
+//                             Autor:
 //                             <input
 //                                 type="text"
-//                                 value={novoCarro.cor}
-//                                 onChange={(e) => setNovoCarro({ ...novoCarro, cor: e.target.value })}
+//                                 value={novoLivro.autor}
+//                                 onChange={(e) => setNovoLivro({ ...novoLivro, autor: e.target.value })}
 //                             />
 //                         </label>
 //                         <label>
 //                             KM:
 //                             <input
 //                                 type="number"
-//                                 value={novoCarro.km}
-//                                 onChange={(e) => setNovoCarro({ ...novoCarro, km: Number(e.target.value) })}
+//                                 value={novoLivro.ano}
+//                                 onChange={(e) => setNovoLivro({ ...novoLivro, ano: Number(e.target.value) })}
 //                             />
 //                         </label>
 //                         <label>
-//                             Placa:
+//                             Editora:
 //                             <input
 //                                 type="text"
-//                                 value={novoCarro.placa}
-//                                 onChange={(e) => setNovoCarro({ ...novoCarro, placa: e.target.value })}
+//                                 value={novoLivro.editora}
+//                                 onChange={(e) => setNovoLivro({ ...novoLivro, editora: e.target.value })}
 //                             />
 //                         </label>
 //                         <div className="modal-buttons">
-//                             <button onClick={salvarCarro}>Salvar</button>
-//                             <button onClick={() => setIsAddingCarro(false)}>Cancelar</button>
+//                             <button onClick={salvarLivro}>Salvar</button>
+//                             <button onClick={() => setIsAddingLivro(false)}>Cancelar</button>
 //                         </div>
 //                     </div>
 //                 </div>
 //             )}
 
-//             {isAddingCliente && (
+//             {isAddingEstudante && (
 //                 <div className="modal">
 //                     <div className="modal-content">
-//                         <h3>Cadastrar Novo Cliente</h3>
+//                         <h3>Cadastrar Novo Estudante</h3>
 //                         <label>
 //                             CPF:
 //                             <input
 //                                 type="text"
-//                                 value={novoCliente.cpf}
-//                                 onChange={(e) => setNovoCliente({ ...novoCliente, cpf: e.target.value })}
+//                                 value={novoEstudante.cpf}
+//                                 onChange={(e) => setNovoEstudante({ ...novoEstudante, cpf: e.target.value })}
 //                             />
 //                         </label>
 //                         <label>
 //                             Nome Completo:
 //                             <input
 //                                 type="text"
-//                                 value={novoCliente.nome_completo}
-//                                 onChange={(e) => setNovoCliente({ ...novoCliente, nome_completo: e.target.value })}
+//                                 value={novoEstudante.nome_completo}
+//                                 onChange={(e) => setNovoEstudante({ ...novoEstudante, nome_completo: e.target.value })}
 //                             />
 //                         </label>
 //                         <label>
 //                             Data de Nascimento:
 //                             <input
 //                                 type="date"
-//                                 value={novoCliente.data_nascimento}
-//                                 onChange={(e) => setNovoCliente({ ...novoCliente, data_nascimento: e.target.value })}
+//                                 value={novoEstudante.data_nascimento}
+//                                 onChange={(e) => setNovoEstudante({ ...novoEstudante, data_nascimento: e.target.value })}
 //                             />
 //                         </label>
 //                         <label>
 //                             E-mail:
 //                             <input
 //                                 type="email"
-//                                 value={novoCliente.email}
-//                                 onChange={(e) => setNovoCliente({ ...novoCliente, email: e.target.value })}
+//                                 value={novoEstudante.email}
+//                                 onChange={(e) => setNovoEstudante({ ...novoEstudante, email: e.target.value })}
 //                             />
 //                         </label>
 //                         <label>
 //                             Telefone:
 //                             <input
 //                                 type="text"
-//                                 value={novoCliente.telefone}
-//                                 onChange={(e) => setNovoCliente({ ...novoCliente, telefone: e.target.value })}
+//                                 value={novoEstudante.telefone}
+//                                 onChange={(e) => setNovoEstudante({ ...novoEstudante, telefone: e.target.value })}
 //                             />
 //                         </label>
 //                         <div className="modal-buttons">
-//                             <button onClick={salvarCliente}>Salvar</button>
-//                             <button onClick={() => setIsAddingCliente(false)}>Cancelar</button>
+//                             <button onClick={salvarEstudante}>Salvar</button>
+//                             <button onClick={() => setIsAddingEstudante(false)}>Cancelar</button>
 //                         </div>
 //                     </div>
 //                 </div>
