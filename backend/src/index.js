@@ -26,7 +26,7 @@ app.get('/tarefas', async (req, res) => {
     }
 });
 
-// Rota para buscar um livro por ID
+// Rota para buscar um tarefa por ID
 app.get('/tarefas/:codigo', async (req, res) => {
     const { codigo } = req.params;
     try {
@@ -37,11 +37,11 @@ app.get('/tarefas/:codigo', async (req, res) => {
         res.json(result.rows[0]);
     } catch (err) {
         console.error(err.message);
-        res.status(500).json({ error: 'Erro ao buscar livro' });
+        res.status(500).json({ error: 'Erro ao buscar tarefa' });
     }
 });
 
-// Rota para adicionar um livro
+// Rota para adicionar um tarefa
 app.post('/tarefas', async (req, res) => {
     const { descricao, nome_setor, data_cadastro, prioridade, status } = req.body;
     try {
@@ -52,7 +52,7 @@ app.post('/tarefas', async (req, res) => {
         res.status(201).json(result.rows[0]);
     } catch (err) {
         console.error(err.message);
-        res.status(500).json({ error: 'Erro ao adicionar livro' });
+        res.status(500).json({ error: 'Erro ao adicionar tarefa' });
     }
 });
 
@@ -60,7 +60,7 @@ app.put('/tarefas/:codigo', async (req, res) => {
     const { codigo } = req.params;
     const { descricao, nome_setor, data_cadastro, prioridade, status, id_usuario, data_retirada, data_prevista_entrega } = req.body;
     try {
-      // Atualizar o livro
+      // Atualizar o tarefa
       const updateResult = await pool.query(
         'UPDATE tarefas SET descricao = $1, nome_setor = $2, data_cadastro = $3, prioridade = $4, status = $5 WHERE codigo = $6 RETURNING *',
         [descricao, nome_setor, data_cadastro, prioridade, status, codigo]
@@ -73,7 +73,7 @@ app.put('/tarefas/:codigo', async (req, res) => {
       // Criar aluguel se status for "alugado"
       if (status === 'emprestado') {
         await pool.query(
-            'INSERT INTO emprestimos (codigo_livro, id_usuario, data_retirada, data_prevista_entrega) VALUES ($1, $2, $3, $4)',
+            'INSERT INTO emprestimos (codigo_tarefa, id_usuario, data_retirada, data_prevista_entrega) VALUES ($1, $2, $3, $4)',
             [codigo, id_usuario, data_retirada, data_prevista_entrega]
         );
       }
@@ -81,11 +81,11 @@ app.put('/tarefas/:codigo', async (req, res) => {
       res.json(updateResult.rows[0]);
     } catch (err) {
       console.error(err.message);
-      res.status(500).json({ error: 'Erro ao atualizar livro' });
+      res.status(500).json({ error: 'Erro ao atualizar tarefa' });
     }
   });
 
-// Rota para deletar um livro
+// Rota para deletar um tarefa
 app.delete('/tarefas/:codigo', async (req, res) => {
     const { codigo } = req.params;
     try {
@@ -96,7 +96,7 @@ app.delete('/tarefas/:codigo', async (req, res) => {
         res.json({ message: 'Carro deletado com sucesso' });
     } catch (err) {
         console.error(err.message);
-        res.status(500).json({ error: 'Erro ao deletar livro' });
+        res.status(500).json({ error: 'Erro ao deletar tarefa' });
     }
 });
 
